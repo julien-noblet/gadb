@@ -176,7 +176,6 @@ func (sync syncTransport) readChunk() (chunk []byte, err error) {
 	log.WriteString("......")
 
 	return
-
 }
 
 func (sync syncTransport) ReadDirectoryEntry() (entry DeviceFileInfo, err error) {

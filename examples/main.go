@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/nanxin/gadb"
 	"log"
+
+	"github.com/julien-noblet/gadb"
 )
 
 func main() {
@@ -25,9 +26,12 @@ func main() {
 	dev.AppTerminateAll()
 	fmt.Println(dev.AppListRunning())
 
-	//userHomeDir, _ := os.UserHomeDir()
-	//apk, err := os.Open(userHomeDir + "/Desktop/xuexi_android_10002068.apk")
-	//checkErr(err)
+	err = dev.ReverseForward(8080, 8080, false)
+	checkErr(err)
+
+	// userHomeDir, _ := os.UserHomeDir()
+	// apk, err := os.Open(userHomeDir + "/Desktop/xuexi_android_10002068.apk")
+	// checkErr(err)
 
 	//log.Println("starting to push apk")
 	//
@@ -46,7 +50,6 @@ func main() {
 	//}
 	//
 	//log.Println("install completed")
-
 }
 
 func checkErr(err error, msg ...string) {

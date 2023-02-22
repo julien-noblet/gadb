@@ -7,8 +7,10 @@ import (
 	"strings"
 )
 
-const AdbServerPort = 5037
-const AdbDaemonPort = 5555
+const (
+	AdbServerPort = 5037
+	AdbDaemonPort = 5555
+)
 
 type Client struct {
 	host string

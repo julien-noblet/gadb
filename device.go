@@ -24,7 +24,7 @@ func (info DeviceFileInfo) IsDir() bool {
 	return (info.Mode & (1 << 14)) == (1 << 14)
 }
 
-const DefaultFileMode = os.FileMode(0664)
+const DefaultFileMode = os.FileMode(0o664)
 
 type DeviceState string
 
@@ -132,6 +132,34 @@ func (d Device) RawForward(local, remote string, noRebind ...bool) (err error) {
 	return
 }
 
+func (d Device) ReverseForward(localPort, remotePort int, noRebind ...bool) (err error) {
+	command := ""
+	local := fmt.Sprintf("tcp:%d", localPort)
+	remote := fmt.Sprintf("tcp:%d", remotePort)
+
+	if len(noRebind) != 0 && noRebind[0] {
+		command = fmt.Sprintf("reverse:forward:norebind:%s;%s", local, remote)
+	} else {
+		command = fmt.Sprintf("reverse:forward:%s;%s", local, remote)
+	}
+
+	_, err = d.executeCommand(command, true)
+	return
+}
+
+func (d Device) ReverseRawForward(local, remote string, noRebind ...bool) (err error) {
+	command := ""
+
+	if len(noRebind) != 0 && noRebind[0] {
+		command = fmt.Sprintf("reverse:forward:norebind:%s;%s", local, remote)
+	} else {
+		command = fmt.Sprintf("reverse:forward:%s;%s", local, remote)
+	}
+
+	_, err = d.executeCommand(command, true)
+	return
+}
+
 func (d Device) ForwardList() (deviceForwardList []DeviceForward, err error) {
 	var forwardList []DeviceForward
 	if forwardList, err = d.adbClient.ForwardList(); err != nil {
@@ -151,6 +179,17 @@ func (d Device) ForwardList() (deviceForwardList []DeviceForward, err error) {
 func (d Device) ForwardKill(localPort int) (err error) {
 	local := fmt.Sprintf("tcp:%d", localPort)
 	_, err = d.adbClient.executeCommand(fmt.Sprintf("host-serial:%s:killforward:%s", d.serial, local), true)
+	return
+}
+
+func (d Device) ReverseForwardKill(localPort int) (err error) {
+	local := fmt.Sprintf("tcp:%d", localPort)
+	_, err = d.executeCommand(fmt.Sprintf("reverse:killforward:%s", local), true)
+	return
+}
+
+func (d Device) ReverseForwardKillAll() (err error) {
+	_, err = d.executeCommand("reverse:killforward-all", true)
 	return
 }
 
@@ -352,7 +391,7 @@ func (d *Device) AppInstall(apkPath string, flags []string, reinstall ...bool) (
 	}
 
 	var shellOutput string
-	if flags != nil && len(flags) > 0 {
+	if len(flags) > 0 {
 		shellOutput, err = d.RunShellCommand("pm install", append(flags, remotePath)...)
 	} else if len(reinstall) != 0 && reinstall[0] {
 		shellOutput, err = d.RunShellCommand("pm install", "-r", remotePath)
