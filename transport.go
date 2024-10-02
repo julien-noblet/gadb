@@ -79,8 +79,11 @@ func (t *Transport) UnpackBytes() (raw []byte, err error) {
 		return nil, err
 	}
 	var size int64
-	if size, err = strconv.ParseInt(length, 16, 64); err != nil {
+	if size, err = strconv.ParseInt(length, 16, 32); err != nil {
 		return nil, err
+	}
+	if size < 0 || size > int64(int(^uint(0)>>1)) {
+		return nil, fmt.Errorf("size out of bounds: %d", size)
 	}
 
 	raw, err = t.ReadBytesN(int(size))
