@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"math"
 )
 
 const (
@@ -71,6 +72,9 @@ func (c Client) ServerVersion() (version int, err error) {
 		return 0, err
 	}
 
+	if v < math.MinInt || v > math.MaxInt {
+		return 0, fmt.Errorf("parsed value out of int range: %d", v)
+	}
 	version = int(v)
 	return
 }
