@@ -218,13 +218,13 @@ func (d Device) EnableAdbOverTCP(port ...int) (err error) {
 	return
 }
 
-func (d Device) createDeviceTransport() (tp transport, err error) {
-	if tp, err = newTransport(fmt.Sprintf("%s:%d", d.adbClient.host, d.adbClient.port)); err != nil {
-		return transport{}, err
+func (d Device) CreateDeviceTransport() (tp *Transport, err error) {
+	if tp, err = NewTransport(fmt.Sprintf("%s:%d", d.adbClient.host, d.adbClient.port)); err != nil {
+		return nil, err
 	}
 
 	if err = tp.Send(fmt.Sprintf("host:transport:%s", d.serial)); err != nil {
-		return transport{}, err
+		return nil, err
 	}
 	err = tp.VerifyResponse()
 	return
@@ -235,8 +235,8 @@ func (d Device) executeCommand(command string, onlyVerifyResponse ...bool) (raw 
 		onlyVerifyResponse = []bool{false}
 	}
 
-	var tp transport
-	if tp, err = d.createDeviceTransport(); err != nil {
+	var tp *Transport
+	if tp, err = d.CreateDeviceTransport(); err != nil {
 		return nil, err
 	}
 	defer func() { _ = tp.Close() }()
@@ -258,8 +258,8 @@ func (d Device) executeCommand(command string, onlyVerifyResponse ...bool) (raw 
 }
 
 func (d Device) List(remotePath string) (devFileInfos []DeviceFileInfo, err error) {
-	var tp transport
-	if tp, err = d.createDeviceTransport(); err != nil {
+	var tp *Transport
+	if tp, err = d.CreateDeviceTransport(); err != nil {
 		return nil, err
 	}
 	defer func() { _ = tp.Close() }()
@@ -304,8 +304,8 @@ func (d Device) Push(source io.Reader, remotePath string, modification time.Time
 		mode = []os.FileMode{DefaultFileMode}
 	}
 
-	var tp transport
-	if tp, err = d.createDeviceTransport(); err != nil {
+	var tp *Transport
+	if tp, err = d.CreateDeviceTransport(); err != nil {
 		return err
 	}
 	defer func() { _ = tp.Close() }()
@@ -336,8 +336,8 @@ func (d Device) Push(source io.Reader, remotePath string, modification time.Time
 }
 
 func (d Device) Pull(remotePath string, dest io.Writer) (err error) {
-	var tp transport
-	if tp, err = d.createDeviceTransport(); err != nil {
+	var tp *Transport
+	if tp, err = d.CreateDeviceTransport(); err != nil {
 		return err
 	}
 	defer func() { _ = tp.Close() }()
@@ -356,8 +356,8 @@ func (d Device) Pull(remotePath string, dest io.Writer) (err error) {
 	return
 }
 
-func (d Device) ShellStream(cmd string) (*transport, *bufio.Scanner, error) {
-	tp, err := d.createDeviceTransport()
+func (d Device) ShellStream(cmd string) (*Transport, *bufio.Scanner, error) {
+	tp, err := d.CreateDeviceTransport()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -371,7 +371,7 @@ func (d Device) ShellStream(cmd string) (*transport, *bufio.Scanner, error) {
 		return nil, nil, err
 	}
 
-	return &tp, bufio.NewScanner(tp.sock), nil
+	return tp, bufio.NewScanner(tp.sock), nil
 }
 
 func (d *Device) AppInstall(apkPath string, flags []string, reinstall ...bool) (err error) {
